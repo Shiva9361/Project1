@@ -1,0 +1,1 @@
+sed "s/NONE//g;s/None//g;s/True/true/g;s/False/false/g" user.csv
