@@ -45,7 +45,7 @@ def create_user_csv():
 
 
 def create_repo_csv():
-    df = pd.read_csv("user.csv")
+    df = pd.read_csv("users.csv")
     users = df["login"]
     required_data = ["login", "full_name", "created_at", "stargazers_count",
                      "watchers_count", "language", "has_projects", "has_wiki", "license_name"]
@@ -66,7 +66,7 @@ def create_repo_csv():
                     "language": repo_data.get("language", ""),
                     "has_projects": "true" if repo_data.get("has_projects") else "false",
                     "has_wiki": "true" if repo_data.get("has_wiki") else "false",
-                    "license_name": repo_data.get("license", {}).get("key", "")
+                    "license_name": repo_data.get("license", {}).get("key", "") if repo_data.get("license", {}) != None else ""
                 }
                 writer.writerow(row)
 
@@ -75,12 +75,14 @@ def get_user_repos(username):
     repos_url = f"{BASE_URL}/users/{username}/repos?per_page=500&page=1"
     response = requests.get(repos_url, auth=HTTPBasicAuth(
         GITHUB_USERNAME, GITHUB_TOKEN))
+    # print(response.json())
     return response.json() if response.status_code == 200 else []
 
 
 def scrape_tokyo_users_and_repos():
-    create_user_csv()
+    # create_user_csv()
     # create_repo_csv()
+    pass
 
 
 scrape_tokyo_users_and_repos()
