@@ -46,7 +46,7 @@ def create_user_csv():
                 try:
                     if (field == "company"):
                         value = str(user_info[field]).strip(
-                            ' \t\n\r\n@').strip().upper()
+                            ' \t\n\r\n').strip().upper().lstrip("@")
                         user_file.write(
                             f'"{value}",')
                     elif user_info[field] == None:
@@ -65,13 +65,39 @@ def create_user_csv():
 def create_repo_csv():
     df = pd.read_csv("user.csv")
     users = df["login"]
+    required_data = ["login", "full_name", "created_at", "stargazers_count",
+                     "watchers_count", "language", "has_projects", "has_wiki", "license_name"]
+
+    with open("repositories.csv", "w") as repo_file:
+        for field in required_data:
+            repo_file.write(f"{field},")
+        repo_file.write("\n")
+
     for user in users:
-        repo_data = get_user_repos(user)
-        print(repo_data)
+        repo_datas = get_user_repos(user)
+        for repo_data in repo_datas:
+            print(repo_data)
+            with open("repositories.csv", "a") as repo_file:
+                for field in required_data:
+                    try:
+                        if field == "login":
+                            repo_file.write(f"{user},")
+                        elif field == "license_name":
+                            repo_file.write(f'{repo_data["license"]["key"]}')
+                        elif repo_data[field] == False:
+                            repo_file.write("false,")
+                        elif repo_data[field] == True:
+                            repo_file.write("true,")
+
+                        else:
+                            repo_file.write(f'{repo_data[field]},')
+                    except:
+                        repo_file.write(",")
+                repo_file.write("\n")
 
 
 def get_user_repos(username):
-    repos_url = f"{BASE_URL}/users/{username}/repos"
+    repos_url = f"{BASE_URL}/users/{username}/repos?per_page=500&page=1"
     response = requests.get(repos_url, auth=HTTPBasicAuth(
         GITHUB_USERNAME, GITHUB_TOKEN))
 
