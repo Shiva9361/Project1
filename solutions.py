@@ -1,5 +1,9 @@
+from datetime import datetime
+from collections import Counter
+import csv
 import pandas as pd
 import numpy as np
+from sklearn.linear_model import LinearRegression
 
 
 def f1():
@@ -82,14 +86,130 @@ def f6():
 
     # Find the second most popular language
     language_counts = filtered_repos["language"].dropna().value_counts()
-    # Second most popular
-    second_most_popular_language = language_counts.index[1]
-    print(second_most_popular_language)
+    print(language_counts)
 
 
+def f7():
+    repos_df = pd.read_csv("repositories.csv")
+
+    # Group by language and calculate the average number of stars
+    average_stars = repos_df.groupby(
+        "language")["stargazers_count"].mean().sort_values(ascending=False)
+
+    # Get the language with the highest average stars
+    highest_avg_stars_language = average_stars.idxmax()
+    print(highest_avg_stars_language)
+
+
+def f8():
+    # Load user data
+    df = pd.read_csv("users.csv")
+
+    # Calculate leader_strength
+    df["leader_strength"] = df["followers"] / (1 + df["following"])
+
+    # Sort by leader_strength in descending order and select the top 5 users
+    top_leaders = df.sort_values(
+        by="leader_strength", ascending=False).head(5)["login"]
+    top_leader_logins = ",".join(top_leaders)
+    print(top_leader_logins)
+
+
+def f9():
+    df = pd.read_csv("users.csv")
+    print(round(df["followers"].corr(df["public_repos"]), 3))
+
+
+def f10():
+    df = pd.read_csv("users.csv")
+
+    X = df["public_repos"].values.reshape(-1, 1)
+    y = df["followers"].values
+
+    model = LinearRegression()
+    model.fit(X, y)
+
+    followers_per_repo = round(model.coef_[0], 3)
+    print(followers_per_repo)
+
+
+def f11():
+    df = pd.read_csv("repositories.csv")
+    correlation = df['has_projects'].dropna().astype(
+        int).corr(df['has_wiki'].dropna().astype(int))
+    print(round(correlation, 3))
+
+
+def f12():
+    df = pd.read_csv("users.csv")
+
+    # Drop NaN values from the following column before calculating the mean
+    hireable_avg = df[df["hireable"] == True]["following"].dropna().mean()
+    non_hireable_avg = df[df["hireable"] == False]["following"].dropna().mean()
+
+    print(f"Average following for hireable users: {round(hireable_avg, 3)}")
+    print(
+        f"Average following for non-hireable users: {round(non_hireable_avg, 3)}")
+
+
+def f13():
+    df = pd.read_csv("users.csv")
+    df_with_bios = df[df["bio"].notna()]
+    df_with_bios["bio_length"] = df_with_bios["bio"].str.split().str.len()
+    X = df_with_bios["bio_length"].values.reshape(-1, 1)
+    y = df_with_bios["followers"].values
+    model = LinearRegression()
+    model.fit(X, y)
+    slope = round(model.coef_[0], 3)
+    print(f"Slope of followers on bio word count: {slope}")
+
+
+def f14():
+    weekend_counts = Counter()
+
+    with open('repositories.csv', 'r', encoding='utf-8') as repo_file:
+        csv_reader = csv.DictReader(repo_file)
+
+        for record in csv_reader:
+            timestamp = record.get('created_at', '')
+            if timestamp:
+                creation_date = datetime.fromisoformat(timestamp[:-1])
+
+                if creation_date.weekday() in [5, 6]:
+                    login = record['login']
+                    weekend_counts[login] += 1
+
+    top_creators = weekend_counts.most_common(5)
+    top_logins = [user[0] for user in top_creators]
+    print(", ".join(top_logins))
+
+
+def f15():
+    df = pd.read_csv("users.csv")
+    df_f = df[df["hireable"] == False]
+    print(df_f.count())  # no value so NaN
+
+
+def f16():
+    df = pd.read_csv("users.csv")
+    df['surname'] = df['name'].str.split().str[-1]
+    common_surnames = df['surname'].value_counts()
+    print(common_surnames)
+
+
+f1()
 f2()
-repos_df = pd.read_csv("repositories.csv")
-repos_with_license = repos_df[repos_df['license_name'].notnull()]
-top_3_licenses = repos_with_license['license_name'].value_counts().head(
-    3).index.tolist()
-print("Ans 3 : Top 3 most popular licenses:", ", ".join(top_3_licenses))
+f3()
+f4()
+f5()
+f6()
+f7()
+f8()
+f9()
+f10()
+f11()
+f12()
+f13()
+f14()
+f15()
+f16()
