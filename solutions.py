@@ -25,39 +25,33 @@ def f4():
     df = pd.read_csv("users.csv")
     df["company"] = (
         df["company"]
-        .str.strip()  # Trim whitespace
-        .str.lstrip("@")  # Remove leading '@' symbol only once
+        .str.strip()
+        .str.lstrip("@")
         .str.upper()
         .str.split()
-        .str[0]  # Convert to uppercase
+        .str[0]
     )
 
     most_common_company = (
         df["company"].replace("NONE", np.nan)
-        .dropna()  # Remove rows with missing company information
+        .dropna()
         .value_counts()
-        .idxmax()  # Get the most common company
+        .idxmax()
     )
-    company_counts = df["company"].value_counts().sort_values(ascending=False)
-    print(list(company_counts))
     print(most_common_company)
 
 
 def f3():
     df = pd.read_csv("repositories.csv")
-
-    # Filter out missing license names, count occurrences, and get the top 3
-    print(df["license_name"].unique())
     popular_licenses = (
         df["license_name"]
-        # .replace("other", np.nan)
-        .dropna()  # Remove rows with missing license names
+
+        .dropna()
         .value_counts()
-        .head(3)  # Get the top 3 licenses
+        .head(3)
         .index.tolist()
     )
 
-    # Format the result as a comma-separated string
     top_licenses = ",".join(popular_licenses)
     print(top_licenses)
 
@@ -66,25 +60,22 @@ def f5():
     df = pd.read_csv("repositories.csv")
     most_popular_language = (
         df["language"]
-        .dropna()  # Remove rows with missing language information
+        .dropna()
         .value_counts()
-        .idxmax()  # Get the most common programming language
+        .idxmax()
     )
     print(most_popular_language)
 
 
 def f6():
 
-    # Load and filter user data for those who joined after 2020
     users_df = pd.read_csv("users.csv")
     recent_users = users_df[pd.to_datetime(
         users_df["created_at"]) > "2020-12-31"]
 
-    # Load repository data and filter for repositories owned by recent users
     repos_df = pd.read_csv("repositories.csv")
     filtered_repos = repos_df[repos_df["login"].isin(recent_users["login"])]
 
-    # Find the second most popular language
     language_counts = filtered_repos["language"].dropna().value_counts()
     print(language_counts)
 
@@ -92,23 +83,19 @@ def f6():
 def f7():
     repos_df = pd.read_csv("repositories.csv")
 
-    # Group by language and calculate the average number of stars
     average_stars = repos_df.groupby(
         "language")["stargazers_count"].mean().sort_values(ascending=False)
 
-    # Get the language with the highest average stars
     highest_avg_stars_language = average_stars.idxmax()
     print(highest_avg_stars_language)
 
 
 def f8():
-    # Load user data
+
     df = pd.read_csv("users.csv")
 
-    # Calculate leader_strength
     df["leader_strength"] = df["followers"] / (1 + df["following"])
 
-    # Sort by leader_strength in descending order and select the top 5 users
     top_leaders = df.sort_values(
         by="leader_strength", ascending=False).head(5)["login"]
     top_leader_logins = ",".join(top_leaders)
@@ -142,14 +129,13 @@ def f11():
 
 def f12():
     df = pd.read_csv("users.csv")
+    df["hireable"] = df["hireable"].fillna(False)
+    print(df["hireable"])
 
-    # Drop NaN values from the following column before calculating the mean
     hireable_avg = df[df["hireable"] == True]["following"].dropna().mean()
-    non_hireable_avg = df[df["hireable"] == False]["following"].dropna().mean()
-
-    print(f"Average following for hireable users: {round(hireable_avg, 3)}")
-    print(
-        f"Average following for non-hireable users: {round(non_hireable_avg, 3)}")
+    non_hireable_avg = df[df["hireable"] ==
+                          False]["following"].mean()
+    print("Ans:", round(hireable_avg, 3)-round(non_hireable_avg, 3))
 
 
 def f13():
@@ -186,8 +172,16 @@ def f14():
 
 def f15():
     df = pd.read_csv("users.csv")
-    df_f = df[df["hireable"] == False]
-    print(df_f.count())  # no value so NaN
+    df["hireable"] = df["hireable"].fillna(False)
+    hireable = df[df["hireable"] == True]
+    non_hireable = df[df["hireable"] == False]
+
+    hireable_email_fraction = hireable["email"].notna().mean()
+    non_hireable_email_fraction = non_hireable["email"].notna().mean()
+
+    difference = round(hireable_email_fraction -
+                       non_hireable_email_fraction, 3)
+    print(difference)
 
 
 def f16():
