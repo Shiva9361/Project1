@@ -55,13 +55,12 @@ def i2():
 def i3():
     df = pd.read_csv("users.csv")
     df["hireable"] = df["hireable"].fillna(False)
-    # Create a new category column for Google, no company, and other companies
+
     df['company_category'] = df['company'].apply(
         lambda x: "Google" if pd.notna(x) and "GOOGLE" in x.upper() else (
             "No Company" if pd.isna(x) else "Other Companies")
     )
 
-    # Calculate the fraction of hireable users in each category
     hireable_counts = df.groupby('company_category')[
         'hireable'].mean().reset_index()
 
@@ -82,7 +81,6 @@ def i3():
                        fontsize=14, weight='bold')
     bar_plot.set(ylim=(0, 1))
 
-    # Annotate each bar with the fraction value
     for p in bar_plot.patches:
         bar_plot.annotate(f'{p.get_height():.2f}',
                           (p.get_x() + p.get_width() / 2., p.get_height()),
@@ -98,17 +96,13 @@ def i4():
 
     df['company'] = df['company'].str.strip().str.upper()
 
-    # Count the number of users in each company
     company_counts = df['company'].value_counts().reset_index()
     company_counts.columns = ['company', 'user_count']
 
-    # Get the top 5 companies based on user counts
     top_companies = company_counts.nlargest(5, 'user_count')['company']
 
-    # Filter the original dataframe for only these top companies
     top_company_data = df[df['company'].isin(top_companies)]
 
-    # Calculate the fraction of hireable users for these top companies
     hireable_counts = top_company_data.groupby(
         'company')['hireable'].mean().reset_index()
 
@@ -130,7 +124,6 @@ def i4():
     bar_plot.set(ylim=(0, 1))
     plt.xticks(rotation=45, ha='right')
 
-    # Annotate each bar with the fraction value
     for p in bar_plot.patches:
         bar_plot.annotate(f'{p.get_height():.2f}',
                           (p.get_x() + p.get_width() / 2., p.get_height()),
@@ -144,14 +137,11 @@ def i4():
 def i5():
     df = pd.read_csv("users.csv")
 
-    # Clean up the company column and calculate bio length
     df['company'] = df['company'].str.strip()
     df['bio_length'] = df['bio'].str.split().str.len().fillna(0)
 
-    # Create a new column to indicate if a user has a company listed
     df['has_company'] = df['company'].notna() & (df['company'] != '')
 
-    # Calculate average bio lengths for each group
     avg_bio_length = df.groupby('has_company')[
         'bio_length'].mean().reset_index()
     avg_bio_length['has_company'] = avg_bio_length['has_company'].map(
@@ -174,7 +164,6 @@ def i5():
         "Comparison of Bio Lengths: Users with vs. without Company", fontsize=14, weight='bold')
     plt.ylim(0, avg_bio_length['bio_length'].max() + 5)
 
-    # Annotate each bar with the average bio length
     for p in bar_plot.patches:
         bar_plot.annotate(f'{p.get_height():.1f}',
                           (p.get_x() + p.get_width() / 2., p.get_height()),
@@ -337,6 +326,3 @@ def i12():
     plt.grid(axis='y', linestyle='--', alpha=0.7)
     plt.tight_layout()
     plt.show()
-
-
-i12()
